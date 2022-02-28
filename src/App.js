@@ -1,25 +1,49 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import SearchBar from "./components/Searchbar/Searchbar";
+import youtube from "./api/youtube";
+import VideoList from "./components/videoLists/VideoList";
+import "./App.css";
+import VideoDetail from "./components/videodetail/videodetail";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component{
+  state={
+    videoList: [],
+    selectVideo: null
+  }
+
+  componentDidMount(){
+    this.onFormSubmit('children');
+  }
+  
+  onFormSubmit = async (data) =>{
+    const res = await youtube.get('/search', {
+      params: {
+        q: data
+      } 
+    });
+    if(res.status === 200){
+      this.setState({
+        videoList: res.data.items,
+        selectVideo: res.data.items[0]
+      })
+    }
+
+  };
+
+  onSelectedItem = (video) =>{
+    this.setState({selectVideo: video})
+  }
+  render(){
+    return (
+      <div className="App">
+        <SearchBar onFormSubmit={this.onFormSubmit}/>
+        <div style={{display: 'grid', gridTemplateColumns: '800px 1fr', padding: '1rem 5rem'}}>
+        <VideoDetail video={this.state.selectVideo}/>
+        <VideoList selectVideo={this.onSelectedItem} VideoList={this.state.videoList}/> 
+        </div>
+        </div>
+    );
+  }
 }
 
 export default App;
